@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>MentorLedger — Coding Trainer Tracker</title>
+<meta name="description" content="Offline tracker for coding trainers: students, class hours, stipend and rewards.">
+<meta name="theme-color" content="#0D1B18">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MentorLedger">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ===================== ONBOARDING ===================== -->
+<div id="onboarding" class="screen">
+  <div class="onboard-wrap">
+    <div class="onboard-mark" aria-hidden="true">
+      <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="34" class="ring-a"/><circle cx="50" cy="50" r="34" class="ring-b"/><path d="M32 52 L45 65 L70 32" class="tick"/></svg>
+    </div>
+    <p class="eyebrow">Set up · Local &amp; offline</p>
+    <h1>Your training ledger,<br>kept on your phone.</h1>
+    <p class="onboard-sub">Track students, class hours, stipend and rewards — nothing leaves this device. Set up the admin profile to begin.</p>
+
+    <form id="onboardForm" class="onboard-form">
+      <label class="field">
+        <span>Your name</span>
+        <input type="text" id="onboardName" value="Prasanth" maxlength="40" required autocomplete="off">
+      </label>
+      <button type="button" id="onboardPhotoBtn" class="ghost-btn small">Add a profile photo (optional)</button>
+      <input type="file" id="onboardPhotoInput" accept="image/*" hidden>
+      <img id="onboardPhotoPreview" alt="" hidden>
+      <button type="submit" class="primary-btn full">Create admin profile</button>
+      <p class="onboard-note">We'll pre-fill 15 sample students, sample classes and coupons so you can see how everything works — manage them anytime from Profile → Admin mode.</p>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== APP SHELL ===================== -->
+<div id="app" class="screen" hidden>
+
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 100 100" class="brand-mark" aria-hidden="true"><circle cx="50" cy="50" r="34" class="ring-a"/><path d="M32 52 L45 65 L70 32" class="tick"/></svg>
+      <div class="brand-text">
+        <span class="brand-name">MentorLedger</span>
+        <span class="brand-date" id="topDate">—</span>
+      </div>
+    </div>
+    <button id="avatarBtn" class="avatar-btn" aria-label="Open profile">
+      <img id="avatarImg" src="" alt="" hidden>
+      <span id="avatarInitial">P</span>
+    </button>
+  </header>
+
+  <main id="content">
+
+    <!-- ---------- DASHBOARD ---------- -->
+    <section id="page-dashboard" class="page active" aria-labelledby="dashTitle">
+      <div class="page-head">
+        <p class="eyebrow">Overview</p>
+        <h1 id="dashTitle">Dashboard</h1>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card stat-primary">
+          <span class="stat-label">Students trained</span>
+          <span class="stat-value mono" id="statStudents">0</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Hours completed</span>
+          <span class="stat-value mono" id="statHours">0</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Classes logged</span>
+          <span class="stat-value mono" id="statSessions">0</span>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <div class="section-head">
+          <h2>Coding round results</h2>
+          <p class="section-sub">Best result per student, across all three questions</p>
+        </div>
+        <div class="rings-row" id="passRings"><!-- filled by JS --></div>
+      </div>
+
+      <div class="section-block">
+        <div class="section-head">
+          <h2>Recent classes</h2>
+          <button class="link-btn" data-nav="students">View students →</button>
+        </div>
+        <ul class="ledger-list" id="recentSessions"><!-- filled by JS --></ul>
+      </div>
+    </section>
+
+    <!-- ---------- STUDENTS (read-only) ---------- -->
+    <section id="page-students" class="page" aria-labelledby="studentsTitle">
+      <div class="page-head row">
+        <div>
+          <p class="eyebrow">Roster</p>
+          <h1 id="studentsTitle">Students</h1>
+        </div>
+      </div>
+      <div class="search-row">
+        <input type="search" id="studentSearch" placeholder="Search students…">
+      </div>
+      <ul class="student-list" id="studentList"><!-- filled by JS --></ul>
+    </section>
+
+    <!-- ---------- STIPEND ---------- -->
+    <section id="page-stipend" class="page" aria-labelledby="stipendTitle">
+      <div class="page-head">
+        <p class="eyebrow">Earnings</p>
+        <h1 id="stipendTitle">Stipend</h1>
+      </div>
+
+      <div class="stipend-hero">
+        <span class="stat-label">Total stipend earned</span>
+        <span class="stipend-amount mono"><span class="rupee">₹</span><span id="stipendTotal">0</span></span>
+        <span class="stipend-sub" id="stipendFormula">0 slots × ₹0 / slot</span>
+      </div>
+
+      <div class="section-block">
+        <div class="section-head">
+          <h2>Monthly breakdown</h2>
+        </div>
+        <ul class="ledger-list" id="monthlyBreakdown"><!-- filled by JS --></ul>
+      </div>
+
+      <div class="section-block">
+        <div class="section-head">
+          <h2>All classes</h2>
+        </div>
+        <ul class="ledger-list detailed" id="stipendLedger"><!-- filled by JS --></ul>
+      </div>
+    </section>
+
+    <!-- ---------- REWARDS (read-only) ---------- -->
+    <section id="page-rewards" class="page" aria-labelledby="rewardsTitle">
+      <div class="page-head">
+        <p class="eyebrow">Coupons</p>
+        <h1 id="rewardsTitle">Rewards &amp; Coupons</h1>
+      </div>
+
+      <div class="brand-grid" id="brandGrid"><!-- filled by JS --></div>
+
+      <div class="section-block" id="couponListsWrap"><!-- filled by JS: one block per brand --></div>
+    </section>
+
+    <!-- ---------- ADMIN (full edit / add / delete) ---------- -->
+    <section id="page-admin" class="page" aria-labelledby="adminTitle">
+      <div class="page-head">
+        <p class="eyebrow">Admin mode</p>
+        <h1 id="adminTitle">Admin</h1>
+      </div>
+
+      <div class="section-block" style="margin-top:0;">
+        <div class="section-head"><h2>Trainer settings</h2></div>
+        <div class="admin-card">
+          <label class="field"><span>Your name</span><input type="text" id="adminNameInput" maxlength="40"></label>
+          <label class="field"><span>Stipend rate per slot (1 hour)</span><div class="rupee-input"><span>₹</span><input type="number" id="adminRateInput" min="0" step="1"></div></label>
+          <button class="primary-btn full" id="adminSaveSettingsBtn">Save settings</button>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <div class="section-head row-head">
+          <h2>Students</h2>
+          <button class="fab" id="adminAddStudentBtn" aria-label="Add student">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+        <div class="search-row">
+          <input type="search" id="adminStudentSearch" placeholder="Search students…">
+        </div>
+        <ul class="student-list" id="adminStudentList"><!-- filled by JS --></ul>
+      </div>
+
+      <div class="section-block">
+        <div class="section-head row-head">
+          <h2>Classes &amp; slots</h2>
+          <button class="fab" id="adminLogClassBtn" aria-label="Log a class">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+        <p class="section-sub" style="margin:-6px 0 12px;">Each class is one slot/hour with up to 15 students marked together.</p>
+        <ul class="ledger-list detailed" id="adminClassList"><!-- filled by JS --></ul>
+      </div>
+
+      <div class="section-block">
+        <div class="section-head"><h2>Rewards &amp; coupons</h2></div>
+        <div class="brand-grid" id="adminBrandGrid"><!-- filled by JS --></div>
+        <div class="section-block" id="adminCouponListsWrap"><!-- filled by JS --></div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="bottomnav">
+    <button class="nav-btn active" data-page="dashboard" aria-label="Dashboard">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-btn" data-page="students" aria-label="Students">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17.5" cy="9.5" r="2.4"/><path d="M15.8 14a5 5 0 0 1 5.2 5.5"/></svg>
+      <span>Students</span>
+    </button>
+    <button class="nav-btn" data-page="stipend" aria-label="Stipend">
+      <svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="13" rx="2"/><path d="M2.5 10h19"/><circle cx="17" cy="14" r="1.6"/></svg>
+      <span>Stipend</span>
+    </button>
+    <button class="nav-btn" data-page="rewards" aria-label="Rewards">
+      <svg viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4Z"/><path d="M12 7v12" stroke-dasharray="2.5 2.5"/></svg>
+      <span>Rewards</span>
+    </button>
+    <button class="nav-btn admin-nav-btn" data-page="admin" aria-label="Admin" id="navAdminBtn" hidden>
+      <svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6l7-3Z"/><path d="M9.5 12l1.8 1.8L14.8 10"/></svg>
+      <span>Admin</span>
+    </button>
+  </nav>
+</div>
+
+<div id="overlay" class="overlay" hidden></div>
+
+<!-- Profile sheet -->
+<div id="profileSheet" class="sheet" aria-hidden="true">
+  <div class="sheet-grab"></div>
+  <div class="sheet-head">
+    <h2>Profile</h2>
+    <button class="icon-btn close-sheet" aria-label="Close">✕</button>
+  </div>
+  <div class="sheet-body">
+    <div class="profile-photo-row">
+      <button class="profile-photo-btn" id="profilePhotoBtn" aria-label="Change photo">
+        <img id="profilePhotoImg" src="" alt="" hidden>
+        <span id="profilePhotoInitial">P</span>
+        <span class="camera-badge">
+          <svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="14" r="3.4"/></svg>
+        </span>
+      </button>
+      <input type="file" id="profilePhotoInput" accept="image/*" hidden>
+      <div class="profile-photo-meta">
+        <span class="profile-role" id="profileNameDisplay">Trainer</span>
+        <span class="profile-role" style="font-weight:500;color:var(--ink-muted);font-size:11.5px;">Coding Trainer</span>
+        <span class="profile-since mono" id="profileSince">Member since —</span>
+      </div>
+    </div>
+
+    <div class="switch-row">
+      <div>
+        <span class="switch-label">Admin mode</span>
+        <span class="switch-sub">Add, edit and delete students, classes and coupons</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="adminModeToggle">
+        <span class="switch-track"><span class="switch-thumb"></span></span>
+      </label>
+    </div>
+
+    <label class="field">
+      <span>Appearance</span>
+      <select id="themeSelect">
+        <option value="auto">Auto (match phone)</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+    </label>
+
+    <div class="danger-zone">
+      <p class="danger-title">Data</p>
+      <p class="danger-sub">Everything is stored only on this device.</p>
+      <button class="ghost-btn full" id="exportDataBtn">Export backup (.json)</button>
+      <button class="ghost-btn full" id="importDataBtn">Import backup</button>
+      <input type="file" id="importDataInput" accept="application/json" hidden>
+      <button class="ghost-btn full danger" id="resetSampleBtn">Reload sample data</button>
+      <button class="ghost-btn full danger" id="clearAllBtn">Erase all data</button>
+    </div>
+    <p class="version-tag">MentorLedger · v1.1 · fully offline</p>
+  </div>
+</div>
+
+<!-- Student detail sheet -->
+<div id="studentSheet" class="sheet" aria-hidden="true">
+  <div class="sheet-grab"></div>
+  <div class="sheet-head">
+    <h2 id="studentSheetName">Student</h2>
+    <button class="icon-btn close-sheet" aria-label="Close">✕</button>
+  </div>
+  <div class="sheet-body">
+    <div class="student-detail-top">
+      <div class="student-avatar lg" id="studentSheetAvatarWrap"><span id="studentSheetInitial">A</span></div>
+      <div class="student-detail-stats">
+        <div><span class="mono" id="studentSheetHours">0</span><label>hours</label></div>
+        <div><span class="mono" id="studentSheetSessions">0</span><label>classes</label></div>
+        <div><span class="mono" id="studentSheetBest">0/3</span><label>best result</label></div>
+      </div>
+    </div>
+    <div class="student-detail-actions">
+      <button class="ghost-btn" id="editStudentBtn">Edit</button>
+      <button class="ghost-btn danger" id="deleteStudentBtn">Delete</button>
+    </div>
+    <div class="section-head tight"><h2>Class history</h2></div>
+    <ul class="ledger-list detailed" id="studentSessionList"></ul>
+  </div>
+</div>
+
+<!-- Add/Edit student form sheet -->
+<div id="studentFormSheet" class="sheet" aria-hidden="true">
+  <div class="sheet-grab"></div>
+  <div class="sheet-head">
+    <h2 id="studentFormTitle">Add student</h2>
+    <button class="icon-btn close-sheet" aria-label="Close">✕</button>
+  </div>
+  <form class="sheet-body" id="studentForm">
+    <div class="profile-photo-row">
+      <button type="button" class="profile-photo-btn" id="studentFormPhotoBtn" aria-label="Add photo">
+        <img id="studentFormPhotoImg" src="" alt="" hidden>
+        <span id="studentFormPhotoInitial">+</span>
+        <span class="camera-badge"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="14" r="3.4"/></svg></span>
+      </button>
+      <input type="file" id="studentFormPhotoInput" accept="image/*" hidden>
+      <div class="profile-photo-meta"><span class="profile-role">Photo is optional</span></div>
+    </div>
+    <label class="field"><span>Full name</span><input type="text" id="studentFormName" required maxlength="60"></label>
+    <label class="field"><span>Phone (optional)</span><input type="tel" id="studentFormPhone" maxlength="20"></label>
+    <label class="field"><span>Notes (optional)</span><textarea id="studentFormNotes" maxlength="200" rows="2"></textarea></label>
+    <input type="hidden" id="studentFormId">
+    <button type="submit" class="primary-btn full">Save student</button>
+  </form>
+</div>
+
+<!-- Add/Edit class (batch, up to 15 students) form sheet -->
+<div id="sessionFormSheet" class="sheet" aria-hidden="true">
+  <div class="sheet-grab"></div>
+  <div class="sheet-head">
+    <h2 id="sessionFormTitle">Log a class</h2>
+    <button class="icon-btn close-sheet" aria-label="Close">✕</button>
+  </div>
+  <form class="sheet-body" id="sessionForm">
+    <label class="field"><span>Date</span><input type="date" id="sessionDate" required></label>
+    <label class="field"><span>Start time</span><input type="time" id="sessionTime" required></label>
+    <label class="field"><span>Hours (slot length)</span><input type="number" id="sessionHours" min="0.5" step="0.5" value="1" required></label>
+    <label class="field"><span>Topic covered (optional)</span><input type="text" id="sessionTopic" maxlength="80"></label>
+    <label class="field"><span>Notes (optional)</span><textarea id="sessionNotes" maxlength="200" rows="2"></textarea></label>
+    <label class="field">
+      <span>Students in this class (up to 15) — check + mark questions passed</span>
+      <div class="class-students-list" id="classStudentsList"><!-- filled by JS --></div>
+    </label>
+    <input type="hidden" id="sessionFormId">
+    <button type="submit" class="primary-btn full">Save class</button>
+    <button type="button" class="ghost-btn full danger" id="deleteClassInFormBtn" hidden>Delete this class</button>
+  </form>
+</div>
+
+<!-- Add coupon form sheet -->
+<div id="couponFormSheet" class="sheet" aria-hidden="true">
+  <div class="sheet-grab"></div>
+  <div class="sheet-head">
+    <h2 id="couponFormTitle">Add coupon</h2>
+    <button class="icon-btn close-sheet" aria-label="Close">✕</button>
+  </div>
+  <form class="sheet-body" id="couponForm">
+    <label class="field">
+      <span>Brand</span>
+      <select id="couponBrand">
+        <option value="amazon">Amazon</option>
+        <option value="flipkart">Flipkart</option>
+        <option value="meesho">Meesho</option>
+        <option value="grocery">Grocery</option>
+      </select>
+    </label>
+    <label class="field"><span>Coupon code</span><input type="text" id="couponCode" maxlength="40" placeholder="e.g. SAVE200"></label>
+    <label class="field"><span>Value</span><div class="rupee-input"><span>₹</span><input type="number" id="couponValue" min="0" step="1" required></div></label>
+    <label class="field"><span>Note (optional)</span><input type="text" id="couponNote" maxlength="80"></label>
+    <input type="hidden" id="couponFormId">
+    <button type="submit" class="primary-btn full">Save coupon</button>
+  </form>
+</div>
+
+<!-- Confirm dialog -->
+<div id="confirmDialog" class="sheet small" aria-hidden="true">
+  <div class="sheet-body">
+    <h2 id="confirmTitle">Are you sure?</h2>
+    <p id="confirmMessage" class="confirm-msg"></p>
+    <div class="confirm-actions">
+      <button class="ghost-btn full" id="confirmCancel">Cancel</button>
+      <button class="primary-btn full danger" id="confirmOk">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
